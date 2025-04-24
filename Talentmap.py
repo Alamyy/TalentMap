@@ -45,7 +45,6 @@ moreinfo = load_moreinfo()
 merged_players = pd.merge(players, moreinfo, on='name', how='left')
 merged_players.columns
 
-
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
@@ -109,14 +108,13 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-                
-                # Check if 'player_id' exists in merged_players
-                if 'player_id' in merged_players.columns:
-                    similar_player_info = merged_players[merged_players['player_id'] == sim_id]
-                    if not similar_player_info.empty:
-                        club_name = similar_player_info['club_name'].iloc[0]
-                        value = similar_player_info['value'].iloc[0]
-                        eligible_players.append((candidate_row['name'], score, club_name, value))
+
+                # Get the similar player's info from merged_players
+                similar_player_info = merged_players[merged_players['player_id_y'] == sim_id]
+                if not similar_player_info.empty:
+                    club_name = similar_player_info.get('club_name', ['Unknown Club'])[0]
+                    value = similar_player_info.get('value', ['Unknown Value'])[0]
+                    eligible_players.append((candidate_row['name'], score, club_name, value))
                 else:
                     eligible_players.append((candidate_row['name'], score, "Unknown Club", "Unknown Value"))
 
