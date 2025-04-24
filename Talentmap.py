@@ -43,7 +43,6 @@ moreinfo = load_moreinfo()
 
 # Merge the players DataFrame with the moreinfo DataFrame based on the 'name' column
 merged_players = pd.merge(players, moreinfo, on='name', how='left')
-merged_players.columns
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
@@ -112,8 +111,9 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 # Get the similar player's info from merged_players
                 similar_player_info = merged_players[merged_players['player_id_y'] == sim_id]
                 if not similar_player_info.empty:
-                    club_name = similar_player_info.get('club_name', ['Unknown Club'])[0]
-                    value = similar_player_info.get('value', ['Unknown Value'])[0]
+                    # Check for the columns and handle missing data
+                    club_name = similar_player_info['club_name'].iloc[0] if 'club_name' in similar_player_info.columns else "Unknown Club"
+                    value = similar_player_info['value'].iloc[0] if 'value' in similar_player_info.columns else "Unknown Value"
                     eligible_players.append((candidate_row['name'], score, club_name, value))
                 else:
                     eligible_players.append((candidate_row['name'], score, "Unknown Club", "Unknown Value"))
@@ -122,6 +122,7 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
         results.extend(eligible_players[:top_n])
 
     return f"🔍 Similar players to {input_name}:", results[:top_n]
+
 
 
 # UI
