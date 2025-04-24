@@ -44,7 +44,6 @@ moreinfo = load_moreinfo()
 # Merge the players DataFrame with the moreinfo DataFrame based on the 'name' column
 merged_players = pd.merge(players, moreinfo, on='name', how='left')
 
-print(merged_players.columns)
 
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
@@ -161,3 +160,4 @@ if st.button("Find Similar Players") and name:
     st.write(msg)
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score", "Club", "Value (€)"]))
+        print(merged_players.columns)
