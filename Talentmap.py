@@ -155,4 +155,4 @@ if st.button("Find Similar Players") and name:
                                         min_overall_rating or None)
     st.write(msg)
     if results:
-        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score","Club Name"]))
