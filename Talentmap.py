@@ -16,7 +16,7 @@ st.markdown(
         .top-right-button {
             position: fixed;
             top: 60px;  /* Move the button down */
-            right: 30px;  /* Move the button to the left */
+            right: 5px;  /* Move the button to the left */
             z-index: 100;
             background-color: #4CAF50; /* Green */
             color: white;
