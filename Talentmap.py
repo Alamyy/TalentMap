@@ -99,7 +99,7 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-                eligible_players.append((candidate_row['name'], score))
+                eligible_players.append((candidate_row['name'], score, candidate_row['age'], candidate_row['value'], candidate_row['wage'], candidate_row['club_name'], candidate_row['overall_rating']))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
@@ -138,4 +138,4 @@ if st.button("Find Similar Players") and name:
                                         min_overall_rating or None)
     st.write(msg)
     if results:
-        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score", "Age", "Value (€)", "Wage (€)", "Club Name", "Overall Rating"]))
