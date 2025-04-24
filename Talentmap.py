@@ -140,27 +140,33 @@ if st.button("Find Similar Players") and name:
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
 
-# Player Info Page
 def player_info_page():
     selected_player = st.session_state.selected_player
 
     # Get player data
     player_data = players[players['name'] == selected_player].iloc[0]
     
-    # Print columns to check if 'full_name' exists
-    st.write(f"Columns in player data: {player_data.index.tolist()}")
-
     # Display Basic Info
-    if 'full_name' in player_data:
-        st.write(f"**Full Name**: {player_data['full_name']}")
-    else:
-        st.write("**Full Name**: Data not available")
-    st.write(f"**Description**: {player_data.get('description', 'Not available')}")
-    st.write(f"**Height**: {player_data.get('height_cm', 'Not available')} cm")
-    st.write(f"**Weight**: {player_data.get('weight_kg', 'Not available')} kg")
-    st.write(f"**Date of Birth**: {player_data.get('dob', 'Not available')}")
+    st.write(f"**Player ID**: {player_data['player_id']}")
+    st.write(f"**Name**: {player_data['name']}")
+    
+    # Handling missing values
+    full_name = player_data.get('full_name', 'Not available')
+    description = player_data.get('description', 'Not available')
+    dob = player_data.get('dob', 'Not available')
+    
+    st.write(f"**Full Name**: {full_name}")
+    st.write(f"**Description**: {description}")
+    st.write(f"**Height**: {player_data['height_cm']} cm")
+    st.write(f"**Weight**: {player_data['weight_kg']} kg")
+    st.write(f"**Date of Birth**: {dob}")
 
-    # Continue with the rest of the page...
+    # Continue with other attributes like skills, etc.
+    st.write(f"**Preferred Foot**: {player_data['preferred_foot']}")
+    st.write(f"**Weak Foot**: {player_data['weak_foot']}")
+    st.write(f"**Skill Moves**: {player_data['skill_moves']}")
+    st.write(f"**Crossing**: {player_data['crossing']}")
+    # Add any other attributes you want to display here...
     
 # Display Player Info Page based on selection
 if 'selected_player' in st.session_state:
