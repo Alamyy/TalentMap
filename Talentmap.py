@@ -21,12 +21,8 @@ position_data = {
 
 @st.cache_data
 def load_players():
-    file_id = "1YLWNW8n4eFQgG77MILXiRkhWJU5a6r41"
-    output_path = "players.pkl"
-    if not os.path.exists(output_path):
-        url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, output_path, quiet=False)
-    return pd.read_pickle(output_path)
+    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/player-data-full.csv"
+    return pd.read_csv(url)
 
 @st.cache_data
 def load_filters():
