@@ -140,4 +140,5 @@ if st.button("Find Similar Players") and name:
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
 
+st.markdown("[Go to App 2](https://beyond-the-eye-proworth.streamlit.app/)", unsafe_allow_html=True)
 
