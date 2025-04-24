@@ -108,6 +108,8 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 # Get the club name from dataset2 using player_id
                 player_club = moreinfo.loc[moreinfo['player_id'] == sim_id, 'club_name']
                 player_club_name = player_club.iloc[0] if not player_club.empty else "Unknown Club"
+                player_value = filters.loc[filters['player_id'] == sim_id, 'value'].iloc[0] if not filters.loc[filters['player_id'] == sim_id, 'value'].empty else "Unknown Value"
+
 
                 eligible_players.append((candidate_row['name'], score, player_club_name))
 
@@ -155,4 +157,4 @@ if st.button("Find Similar Players") and name:
                                         min_overall_rating or None)
     st.write(msg)
     if results:
-        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score","Club Name"]))
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score","Club Name","Player Value"]))
