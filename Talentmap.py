@@ -29,9 +29,14 @@ def load_players():
         gdown.download(url, output_path, quiet=False)
     return pd.read_pickle(output_path)
 
-# Load the players dataset
+@st.cache_data
+def load_filters():
+    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
+    return pd.read_csv(url)
+
+# Load datasets
 players = load_players()
-filters = https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/filters.csv  # filters used in condition checks
+filters = load_filters()
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
@@ -43,14 +48,13 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 
     results = []
 
-    for _, row in matches.iterrows():
-        player_name = row['name']
-        player_id = row['player_id']
-        
-        # Detect position
+    for _, match_row in matches.iterrows():
+        player_name = match_row['name']
+        player_id = match_row['player_id']
+
         position_cols = [col for col in players.columns if col in position_data]
-        player_position = next((pos for pos in position_cols if row.get(pos, 0) == 1), None)
-        
+        player_position = next((pos for pos in position_cols if match_row.get(pos, 0) == 1), None)
+
         if not player_position or player_position not in position_data:
             return f"⚠️ No data for position: {player_position}", []
 
@@ -63,9 +67,13 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
             return "❌ Player not found in position dataset.", []
 
         df = dataset[['name', 'player_id'] + features].dropna()
-        X = df[features]
-        names = df['name']
 
+        # Ensure all features are in dataset
+        missing_features = [feat for feat in features if feat not in df.columns]
+        if missing_features:
+            return f"❌ Missing features in dataset: {missing_features}", []
+
+        X = df[features]
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
         pca = PCA(n_components=0.95)
@@ -76,16 +84,16 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 
         eligible_players = []
 
-        for i, row in df.iterrows():
-            sim_id = row['player_id']
+        for i, candidate_row in df.iterrows():
+            sim_id = candidate_row['player_id']
             if sim_id == player_id:
                 continue
 
             valid = True
 
             def check(column, value, op):
-                val = filters.loc[filters['player_id'] == sim_id, column].values
-                return val.size > 0 and op(val[0], value)
+                val = filters.loc[filters['player_id'] == sim_id, column]
+                return not val.empty and op(val.iloc[0], value)
 
             if max_wage and not check('wage', max_wage, lambda a, b: a <= b): valid = False
             if max_value and not check('value', max_value, lambda a, b: a <= b): valid = False
@@ -100,10 +108,12 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-                eligible_players.append((row['name'], score))
+                eligible_players.append((candidate_row['name'], score))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
-        return f"🔍 Similar players to {player_name} ({player_position}):", eligible_players[:top_n]
+        results.extend(eligible_players[:top_n])
+
+    return f"🔍 Similar players to {name}:", results[:top_n]
 
 # UI
 st.title("🎯 Similar Players Finder")
