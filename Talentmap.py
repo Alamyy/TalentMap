@@ -111,22 +111,24 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 st.title("🎯 Similar Players Finder")
 
 player_names = sorted(players['name'].dropna().unique())
-name = st.selectbox("Choose a player", player_names)
+name = st.selectbox("Choose a player", [''] + player_names)
 
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-with st.expander("Advanced Filters"):
-    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
-    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-    max_age = st.number_input("Max Age", min_value=0, step=1)
-    min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+# Filters
+st.markdown("### 🧰 Advanced Filters")
+max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+max_age = st.number_input("Max Age", min_value=0, step=1)
+min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
 
-    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
-    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
-    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
+club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
 
-if st.button("Find Similar Players"):
+# Search button
+if st.button("Find Similar Players") and name:
     msg, results = find_similar_players(name, top_n,
                                         max_wage or None,
                                         max_age or None,
