@@ -9,33 +9,6 @@ from sklearn.metrics.pairwise import cosine_distances
 
 st.set_page_config(page_title="TalentMap", page_icon="🌟")
 
-# Use Markdown for the button with custom CSS for positioning
-st.markdown(
-    """
-    <style>
-        .top-right-button {
-            position: fixed;
-            top: 180px;  /* Move the button down */
-            right: 100px;  /* Move the button to the left */
-            z-index: 100;
-            background-color: #FFFFF; /* Green */
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 16px;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border: none;
-        }
-
-        .top-right-button:hover {
-            background-color: #FFFF00;
-        }
-    </style>
-    <a href="https://beyond-the-eye-proworth.streamlit.app/" target="_blank" class="top-right-button">Go to ProWorth</a>
-    """, unsafe_allow_html=True
-)
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
