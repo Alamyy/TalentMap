@@ -37,11 +37,11 @@ def load_filters():
 players = load_players()
 filters = load_filters()
 
-def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None,
-                         max_release_clause=None, club_name=None, club_league_name=None,
-                         country_name=None, min_overall_rating=None):
+def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
+                          max_release_clause=None, club_name=None, club_league_name=None, 
+                          country_name=None, min_overall_rating=None):
 
-    matches = players[players['name'].str.lower() == input_name.lower()]
+    matches = players[players['name'] == input_name]
     if matches.empty:
         return "❌ No matching player found.", []
 
@@ -110,33 +110,23 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 # UI
 st.title("🎯 Similar Players Finder")
 
-player_input = st.text_input("Type Player Name")
-suggestions = [name for name in players['name'].unique() if player_input.lower() in name.lower()]
-
-if player_input and suggestions:
-    name = st.selectbox("Choose from suggestions:", suggestions)
-else:
-    name = None
+player_names = sorted(players['name'].dropna().unique())
+name = st.selectbox("Choose a player", player_names)
 
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-# Filters in horizontal layout
-col1, col2, col3 = st.columns(3)
-with col1:
+with st.expander("Advanced Filters"):
+    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
     max_age = st.number_input("Max Age", min_value=0, step=1)
     min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
 
-with col2:
-    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
 
-with col3:
-    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-    club_name = st.selectbox("Club", [''] + sorted(filters['club_name'].dropna().unique()))
-    club_league_name = st.selectbox("Club League", [''] + sorted(filters['club_league_name'].dropna().unique()))
-    country_name = st.selectbox("Country", [''] + sorted(filters['country_name'].dropna().unique()))
-
-if name and st.button("Find Similar Players"):
+if st.button("Find Similar Players"):
     msg, results = find_similar_players(name, top_n,
                                         max_wage or None,
                                         max_age or None,
