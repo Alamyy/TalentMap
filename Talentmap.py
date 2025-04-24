@@ -107,18 +107,22 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-
-                # Get the similar player's additional info from the merged_players dataframe
-                similar_player_info = merged_players[merged_players['player_id'] == sim_id]
-                if not similar_player_info.empty:
-                    club = similar_player_info['club_name'].values[0]
-                    value = similar_player_info['value'].values[0]
-                    eligible_players.append((candidate_row['name'], score, club, value))
+                
+                # Check if 'player_id' exists in merged_players
+                if 'player_id' in merged_players.columns:
+                    similar_player_info = merged_players[merged_players['player_id'] == sim_id]
+                    if not similar_player_info.empty:
+                        club_name = similar_player_info['club_name'].iloc[0]
+                        value = similar_player_info['value'].iloc[0]
+                        eligible_players.append((candidate_row['name'], score, club_name, value))
+                else:
+                    eligible_players.append((candidate_row['name'], score, "Unknown Club", "Unknown Value"))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
 
     return f"🔍 Similar players to {input_name}:", results[:top_n]
+
 
 # UI
 st.title("🎯 Similar Players Finder")
