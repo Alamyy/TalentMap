@@ -115,17 +115,22 @@ name = st.selectbox("Choose a player", [''] + player_names)
 
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-# Filters
-st.markdown("### 🧰 Advanced Filters")
-max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
-max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-max_age = st.number_input("Max Age", min_value=0, step=1)
-min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+show_filters = st.checkbox("🔧 Show Advanced Filters")
 
-club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
-club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
-country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
+if show_filters:
+    with st.expander("🎛 Customize Your Filters", expanded=True):
+        max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+        max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+        max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+        max_age = st.number_input("Max Age", min_value=0, step=1)
+        min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+
+        club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+        club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+        country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
+else:
+    max_wage = max_value = max_release_clause = max_age = min_overall_rating = None
+    club_name = club_league_name = country_name = None
 
 # Search button
 if st.button("Find Similar Players") and name:
