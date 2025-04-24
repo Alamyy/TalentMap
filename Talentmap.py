@@ -9,6 +9,22 @@ from sklearn.metrics.pairwise import cosine_distances
 
 st.set_page_config(page_title="TalentMap", page_icon="🌟")
 
+st.markdown(
+    """
+    <style>
+        .top-right-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+    </style>
+    <a href="https://beyond-the-eye-proworth.streamlit.app/" target="_blank">
+        <button class="top-right-button">Go to ProWorth</button>
+    </a>
+    """, unsafe_allow_html=True
+)
+
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -142,5 +158,5 @@ if st.button("Find Similar Players") and name:
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
 
-st.markdown("[Go to App 2](https://beyond-the-eye-proworth.streamlit.app/)", unsafe_allow_html=True)
+
 
