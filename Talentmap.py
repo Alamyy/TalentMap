@@ -1,12 +1,42 @@
 import streamlit as st
 import pandas as pd
-import pickle
-import gdown
-import os
+import gspread
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
+import pickle
 
+# Function to authenticate and load data from the public Google Sheet
+def load_players():
+    # Authenticate using the gspread API (no need for credentials if it's public)
+    gc = gspread.service_account()
+    
+    # Open the sheet by its URL
+    sheet_url = "https://docs.google.com/spreadsheets/d/1vpyfv4fMzjuGCy7H2_YsUOG1Bbq1wkuRcMDrsjpsl_E/edit?usp=sharing"
+    spreadsheet = gc.open_by_url(sheet_url)
+    
+    # Open the first sheet (if you have multiple sheets, you can use sheet names)
+    worksheet = spreadsheet.sheet1
+    
+    # Get all records as a list of dictionaries
+    data = worksheet.get_all_records()
+    
+    # Convert data to a pandas DataFrame
+    return pd.DataFrame(data)
+
+# Load filters (you can still load them from a CSV if needed)
+@st.cache_data
+def load_filters():
+    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
+    return pd.read_csv(url)
+
+# Load the player data from the Google Sheets
+players = load_players()
+
+# Load additional filters
+filters = load_filters()
+
+# Position data dictionary (example, you can modify as per your dataset)
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -19,26 +49,11 @@ position_data = {
     'RB': {'dataset_path': 'full_backs.pkl', 'features_path': 'full_backs_features.pkl'}
 }
 
-@st.cache_data
-def load_players():
-    file_id = "1YLWNW8n4eFQgG77MILXiRkhWJU5a6r41"
-    output_path = "players.pkl"
-    if not os.path.exists(output_path):
-        url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, output_path, quiet=False)
-    return pd.read_pickle(output_path)
-
-@st.cache_data
-def load_filters():
-    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
-    return pd.read_csv(url)
-
-players = load_players()
-filters = load_filters()
-
+# Function to find similar players
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
+
     matches = players[players['name'] == input_name]
     if matches.empty:
         return "❌ No matching player found.", []
@@ -98,26 +113,15 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-
-                # Safely access the required columns
-                player_info = [
-                    candidate_row['name'],
-                    score,
-                    candidate_row.get('age', 'N/A'),
-                    candidate_row.get('value', 'N/A'),
-                    candidate_row.get('wage', 'N/A'),
-                    candidate_row.get('club_name', 'N/A'),
-                    candidate_row.get('overall_rating', 'N/A')
-                ]
-
-                eligible_players.append(player_info)
+                eligible_players.append((candidate_row['name'], score, candidate_row['age'], candidate_row['value'], 
+                                         candidate_row['wage'], candidate_row['club_name'], candidate_row['overall_rating']))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
 
     return f"🔍 Similar players to {input_name}:", results[:top_n]
 
-# UI
+# Streamlit UI
 st.title("🎯 Similar Players Finder")
 
 player_names = sorted(players['name'].dropna().unique())
@@ -150,3 +154,4 @@ if st.button("Find Similar Players") and name:
     st.write(msg)
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score", "Age", "Value (€)", "Wage (€)", "Club Name", "Overall Rating"]))
+
