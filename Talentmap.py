@@ -39,7 +39,6 @@ filters = load_filters()
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
-
     matches = players[players['name'] == input_name]
     if matches.empty:
         return "❌ No matching player found.", []
@@ -99,7 +98,19 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-                eligible_players.append((candidate_row['name'], score, candidate_row['age'], candidate_row['value'], candidate_row['wage'], candidate_row['club_name'], candidate_row['overall_rating']))
+
+                # Safely access the required columns
+                player_info = [
+                    candidate_row['name'],
+                    score,
+                    candidate_row.get('age', 'N/A'),
+                    candidate_row.get('value', 'N/A'),
+                    candidate_row.get('wage', 'N/A'),
+                    candidate_row.get('club_name', 'N/A'),
+                    candidate_row.get('overall_rating', 'N/A')
+                ]
+
+                eligible_players.append(player_info)
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
