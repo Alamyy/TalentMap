@@ -110,48 +110,7 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 
     return f"🔍 Similar players to {input_name}:", results[:top_n]
 
-# UI
-st.title("🎯 Similar Players Finder")
-
-# Player selection dropdown
-player_names = sorted(players['name'].dropna().unique())
-name = st.selectbox("Choose a player", [''] + player_names)
-
-# When a player is selected, store it in session state
-if name:
-    st.session_state.selected_player = name
-
-# Display similar players search button
-top_n = st.slider("Number of similar players to show", 1, 20, 10)
-
-# Advanced Filters Section
-with st.expander("⚙️ Advanced Filters"):
-    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
-    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-    max_age = st.number_input("Max Age", min_value=0, step=1)
-    min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
-
-    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
-    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
-    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
-
-# Search Button
-if st.button("Find Similar Players") and name:
-    msg, results = find_similar_players(name, top_n,
-                                        max_wage or None,
-                                        max_age or None,
-                                        max_value or None,
-                                        max_release_clause or None,
-                                        club_name or None,
-                                        club_league_name or None,
-                                        country_name or None,
-                                        min_overall_rating or None)
-    st.write(msg)
-    if results:
-        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
-
-# Display Player Info Page
+# Function to display player info page
 def player_info_page():
     selected_player = st.session_state.selected_player
 
@@ -180,6 +139,50 @@ def player_info_page():
     st.write(f"**Crossing**: {player_data['crossing']}")
     # Add any other attributes you want to display here...
 
-# Display Player Info Page based on selection
-if 'selected_player' in st.session_state:
+# UI
+st.title("🎯 Similar Players Finder")
+
+# Navigation
+page = st.radio("Select a page", ["Find Similar Players", "Player Info"])
+
+if page == "Find Similar Players":
+    # Player selection dropdown
+    player_names = sorted(players['name'].dropna().unique())
+    name = st.selectbox("Choose a player", [''] + player_names)
+
+    # When a player is selected, store it in session state
+    if name:
+        st.session_state.selected_player = name
+
+    # Display similar players search button
+    top_n = st.slider("Number of similar players to show", 1, 20, 10)
+
+    # Advanced Filters Section
+    with st.expander("⚙️ Advanced Filters"):
+        max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+        max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+        max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+        max_age = st.number_input("Max Age", min_value=0, step=1)
+        min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+
+        club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+        club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+        country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
+
+    # Search Button
+    if st.button("Find Similar Players") and name:
+        msg, results = find_similar_players(name, top_n,
+                                            max_wage or None,
+                                            max_age or None,
+                                            max_value or None,
+                                            max_release_clause or None,
+                                            club_name or None,
+                                            club_league_name or None,
+                                            country_name or None,
+                                            min_overall_rating or None)
+        st.write(msg)
+        if results:
+            st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
+
+elif page == "Player Info" and 'selected_player' in st.session_state:
     player_info_page()
