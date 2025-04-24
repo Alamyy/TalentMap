@@ -115,9 +115,6 @@ def player_info_page():
     # Get player data
     player_data = players[players['name'] == selected_player].iloc[0]
     
-    # Display Player Image
-    st.image(player_data['image'], caption=player_data['name'], width=150)
-
     # Display Basic Info
     st.subheader(f"Player Info: {player_data['name']}")
     st.write(f"**Full Name**: {player_data['full_name']}")
