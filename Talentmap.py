@@ -112,9 +112,10 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 if player_value != "Unknown Value":
                     player_value = f"€{player_value / 1_000_000:.2f}M"
 
-                player_release_clause = filters.loc[filters['player_id'] == sim_id, 'release_clause'].iloc[0] if not filters.loc[filters['player_id'] == sim_id, 'release_clause'].empty else "Unknown Release Clause"
-                if player_release_clause != "Unknown Release Clause":
+                if player_release_clause is not None and not pd.isna(player_release_clause):
                     player_release_clause = f"€{player_release_clause / 1_000_000:.2f}M"
+                else:
+                    player_release_clause = "Unknown Release Clause"
 
                 eligible_players.append((candidate_row['name'], score, player_club_name, player_value, player_release_clause))
 
