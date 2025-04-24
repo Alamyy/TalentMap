@@ -150,9 +150,6 @@ import pandas as pd
 url = 'https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/player-data-full.csv'
 df = pd.read_csv(url)
 
-# Streamlit page configuration
-st.set_page_config(page_title="Player Miner", layout="wide")
-
 # Title of the page
 st.title("Player Miner")
 
