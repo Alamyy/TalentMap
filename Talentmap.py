@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
 
+# Position-specific datasets and features
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -117,6 +118,7 @@ top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
 filter_toggle = st.selectbox("🎛 Filter Options", ["None", "Show Advanced Filters"])
 
+# Filters section - show only when toggled
 if filter_toggle == "Show Advanced Filters":
     with st.expander("🔧 Customize Your Filters", expanded=True):
         max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
@@ -132,17 +134,17 @@ else:
     max_wage = max_value = max_release_clause = max_age = min_overall_rating = None
     club_name = club_league_name = country_name = None
 
-# Search button
+# Button to find similar players
 if st.button("Find Similar Players") and name:
     msg, results = find_similar_players(name, top_n,
-                                        max_wage or None,
-                                        max_age or None,
-                                        max_value or None,
-                                        max_release_clause or None,
-                                        club_name or None,
-                                        club_league_name or None,
-                                        country_name or None,
-                                        min_overall_rating or None)
+                                        max_wage,
+                                        max_age,
+                                        max_value,
+                                        max_release_clause,
+                                        club_name,
+                                        club_league_name,
+                                        country_name,
+                                        min_overall_rating)
     st.write(msg)
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
