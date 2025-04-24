@@ -112,7 +112,12 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 if player_value != "Unknown Value":
                     player_value = f"€{player_value / 1_000_000:.2f}M"
 
-                eligible_players.append((candidate_row['name'], score, player_club_name, player_value))
+                player_release_clause = filters.loc[filters['player_id'] == sim_id, 'release_clause'].iloc[0] if not filters.loc[filters['player_id'] == sim_id, 'release_clause'].empty else "Unknown Release Clause"
+                if player_release_clause != "Unknown Release Clause":
+                    player_release_clause = f"€{player_release_clause / 1_000_000:.2f}M"
+
+                eligible_players.append((candidate_row['name'], score, player_club_name, player_value, player_release_clause))
+
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
@@ -159,4 +164,5 @@ if st.button("Find Similar Players") and name:
                                         min_overall_rating or None)
     st.write(msg)
     if results:
-        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score","Club Name","Player Value"]))
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score", "Club Name", "Player Value", "Release Clause"]))
+
