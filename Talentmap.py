@@ -36,6 +36,10 @@ def load_filters():
 players = load_players()
 filters = load_filters()
 
+st.write("Columns in the Players DataFrame:")
+st.write(players.columns)
+st.write(players.head())
+
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
