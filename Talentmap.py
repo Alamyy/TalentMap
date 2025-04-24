@@ -21,8 +21,12 @@ position_data = {
 
 @st.cache_data
 def load_players():
-    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/players_adjusted.csv"
-    return pd.read_csv(url)
+    file_id = "1YLWNW8n4eFQgG77MILXiRkhWJU5a6r41"
+    output_path = "players.pkl"
+    if not os.path.exists(output_path):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, output_path, quiet=False)
+    return pd.read_pickle(output_path)
 
 @st.cache_data
 def load_filters():
@@ -31,9 +35,6 @@ def load_filters():
 
 players = load_players()
 filters = load_filters()
-
-import pandas as pd
-import streamlit as st
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
