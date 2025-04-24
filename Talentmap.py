@@ -15,8 +15,8 @@ st.markdown(
     <style>
         .top-right-button {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 60px;  /* Move the button down */
+            right: 30px;  /* Move the button to the left */
             z-index: 100;
             background-color: #4CAF50; /* Green */
             color: white;
@@ -36,7 +36,6 @@ st.markdown(
     <a href="https://beyond-the-eye-proworth.streamlit.app/" target="_blank" class="top-right-button">Go to ProWorth</a>
     """, unsafe_allow_html=True
 )
-
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
