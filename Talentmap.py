@@ -108,7 +108,9 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 player_club = moreinfo.loc[moreinfo['player_id'] == sim_id, 'club_name']
                 player_club_name = player_club.iloc[0] if not player_club.empty else "Unknown Club"
 
-                player_value = filters.loc[filters['player_id'] == sim_id, 'value'].iloc[0] if not filters.loc[filters['player_id'] == sim_id, 'value'].empty else "Unknown Value"
+               player_value = filters.loc[filters['player_id'] == sim_id, 'value'].iloc[0] if not filters.loc[filters['player_id'] == sim_id, 'value'].empty else "Unknown Value"
+               if player_value != "Unknown Value":
+                   player_value = f"€{player_value / 1_000_000:.2f}M"
 
                 eligible_players.append((candidate_row['name'], score, player_club_name, player_value))
 
