@@ -15,7 +15,7 @@ st.markdown(
     <style>
         .top-right-button {
             position: fixed;
-            top: 60px;  /* Move the button down */
+            top: 180px;  /* Move the button down */
             right: 100px;  /* Move the button to the left */
             z-index: 100;
             background-color: #FFFFF; /* Green */
@@ -30,7 +30,7 @@ st.markdown(
         }
 
         .top-right-button:hover {
-            background-color: #45a049;
+            background-color: #FFFFF;
         }
     </style>
     <a href="https://beyond-the-eye-proworth.streamlit.app/" target="_blank" class="top-right-button">Go to ProWorth</a>
