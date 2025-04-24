@@ -146,7 +146,7 @@ if st.button("Find Similar Players") and name:
     st.write(msg)
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
-        
+
 #----------------------------------------------------------
 
 if page == "Player Exploration":
@@ -223,5 +223,3 @@ if page == "Player Exploration":
             st.image(player_data['country_flag'], caption=f"{player_data['country_name']} Flag", use_column_width=True)
         else:
             st.write("No country flag available.")
-
-
