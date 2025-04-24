@@ -20,7 +20,6 @@ position_data = {
 }
 
 st.set_page_config(page_title="TalentMap", page_icon="⚽")
-st.title("🎯 Similar Players Finder")
 
 @st.cache_data
 def load_players():
