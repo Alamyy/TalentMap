@@ -36,17 +36,13 @@ def load_moreinfo():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/player-data-full.csv"
     return pd.read_csv(url)
 
-
 # Load datasets
 players = load_players()
 filters = load_filters()
-moreinfo= load_moreinfo()
+moreinfo = load_moreinfo()
 
 # Merge the players DataFrame with the moreinfo DataFrame based on the 'name' column
 merged_players = pd.merge(players, moreinfo, on='name', how='left')
-
-# Display the first few rows of the merged DataFrame
-st.write(merged_players.head())
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
@@ -111,7 +107,13 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-                eligible_players.append((candidate_row['name'], score))
+
+                # Get the similar player's additional info from the merged_players dataframe
+                similar_player_info = merged_players[merged_players['player_id'] == sim_id]
+                if not similar_player_info.empty:
+                    club = similar_player_info['club_name'].values[0]
+                    value = similar_player_info['value'].values[0]
+                    eligible_players.append((candidate_row['name'], score, club, value))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
@@ -151,4 +153,4 @@ if st.button("Find Similar Players") and name:
                                         min_overall_rating or None)
     st.write(msg)
     if results:
-        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score", "Club", "Value (€)"]))
