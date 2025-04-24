@@ -33,7 +33,6 @@ def load_filters():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
     return pd.read_csv(url)
 
-# Load datasets
 players = load_players()
 filters = load_filters()
 
@@ -50,7 +49,6 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
     for _, match_row in matches.iterrows():
         player_name = match_row['name']
         player_id = match_row['player_id']
-        player_image = match_row['image']  # Assuming the image column contains the file path or URL
 
         position_cols = [col for col in players.columns if col in position_data]
         player_position = next((pos for pos in position_cols if match_row.get(pos, 0) == 1), None)
@@ -101,7 +99,7 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 pca_idx = df.index.get_loc(i)
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-                eligible_players.append((candidate_row['name'], score, candidate_row['image']))
+                eligible_players.append((candidate_row['name'], score))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
@@ -113,27 +111,21 @@ st.title("🎯 Similar Players Finder")
 
 player_names = sorted(players['name'].dropna().unique())
 name = st.selectbox("Choose a player", [''] + player_names)
-
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-filter_toggle = st.selectbox("🎛 Filter Options", ["None", "Show Advanced Filters"])
+# Advanced Filters Section
+with st.expander("⚙️ Advanced Filters"):
+    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+    max_age = st.number_input("Max Age", min_value=0, step=1)
+    min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
 
-if filter_toggle == "Show Advanced Filters":
-    with st.expander("🔧 Customize Your Filters", expanded=True):
-        max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-        max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
-        max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-        max_age = st.number_input("Max Age", min_value=0, step=1)
-        min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
 
-        club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
-        club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
-        country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
-else:
-    max_wage = max_value = max_release_clause = max_age = min_overall_rating = None
-    club_name = club_league_name = country_name = None
-
-# Search button
+# Search Button
 if st.button("Find Similar Players") and name:
     msg, results = find_similar_players(name, top_n,
                                         max_wage or None,
@@ -146,7 +138,4 @@ if st.button("Find Similar Players") and name:
                                         min_overall_rating or None)
     st.write(msg)
     if results:
-        for result in results:
-            player_name, score, image = result
-            st.image(image, width=50)  # Display image with size adjustment
-            st.write(f"Player: {player_name} | Similarity Score: {score:.2f}")
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
