@@ -31,7 +31,7 @@ def load_players():
 
 # Load the players dataset
 players = load_players()
-filters = players.copy()  # filters used in condition checks
+filters = https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/filters.csv  # filters used in condition checks
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
