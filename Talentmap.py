@@ -32,6 +32,22 @@ def load_filters():
 players = load_players()
 filters = load_filters()
 
+import pandas as pd
+import streamlit as st
+
+@st.cache_data
+def load_players_from_google_sheet():
+    # Google Sheets link (adjusted to the raw CSV format)
+    sheet_url = "https://docs.google.com/spreadsheets/d/1vpyfv4fMzjuGCy7H2_YsUOG1Bbq1wkuRcMDrsjpsl_E/export?format=csv&id=1vpyfv4fMzjuGCy7H2_YsUOG1Bbq1wkuRcMDrsjpsl_E&gid=300931738"
+    
+    # Load the data into a DataFrame
+    return pd.read_csv(sheet_url)
+
+# Load the data
+more_data = load_players_from_google_sheet()
+
+# Display the first few rows of the dataframe to confirm it loaded correctly
+st.write(more_data.head())
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
