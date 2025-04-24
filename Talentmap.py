@@ -7,7 +7,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
 
-# Position-specific datasets and features
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -34,7 +33,6 @@ def load_filters():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
     return pd.read_csv(url)
 
-# Load datasets
 players = load_players()
 filters = load_filters()
 
@@ -113,38 +111,31 @@ st.title("🎯 Similar Players Finder")
 
 player_names = sorted(players['name'].dropna().unique())
 name = st.selectbox("Choose a player", [''] + player_names)
-
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-filter_toggle = st.selectbox("🎛 Filter Options", ["None", "Show Advanced Filters"])
+# Advanced Filters Section
+with st.expander("⚙️ Advanced Filters"):
+    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+    max_age = st.number_input("Max Age", min_value=0, step=1)
+    min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
 
-# Filters section - show only when toggled
-if filter_toggle == "Show Advanced Filters":
-    with st.expander("🔧 Customize Your Filters", expanded=True):
-        max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-        max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
-        max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-        max_age = st.number_input("Max Age", min_value=0, step=1)
-        min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
 
-        club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
-        club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
-        country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
-else:
-    max_wage = max_value = max_release_clause = max_age = min_overall_rating = None
-    club_name = club_league_name = country_name = None
-
-# Button to find similar players
+# Search Button
 if st.button("Find Similar Players") and name:
     msg, results = find_similar_players(name, top_n,
-                                        max_wage,
-                                        max_age,
-                                        max_value,
-                                        max_release_clause,
-                                        club_name,
-                                        club_league_name,
-                                        country_name,
-                                        min_overall_rating)
+                                        max_wage or None,
+                                        max_age or None,
+                                        max_value or None,
+                                        max_release_clause or None,
+                                        club_name or None,
+                                        club_league_name or None,
+                                        country_name or None,
+                                        min_overall_rating or None)
     st.write(msg)
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
