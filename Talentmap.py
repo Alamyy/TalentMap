@@ -21,7 +21,7 @@ position_data = {
 
 @st.cache_data
 def load_players():
-    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/player-data-full.csv"
+    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/players_adjusted.csv"
     return pd.read_csv(url)
 
 @st.cache_data
