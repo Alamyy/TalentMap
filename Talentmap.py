@@ -30,10 +30,23 @@ def load_players():
 def load_filters():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
     return pd.read_csv(url)
+    
+@st.cache_data
+def load_moreinfo():
+    url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/player-data-full.csv"
+    return pd.read_csv(url)
+
 
 # Load datasets
 players = load_players()
 filters = load_filters()
+moreinfo= load_moreinfo()
+
+# Merge the players DataFrame with the moreinfo DataFrame based on the 'name' column
+merged_players = pd.merge(players, moreinfo, on='name', how='left')
+
+# Display the first few rows of the merged DataFrame
+st.write(merged_players.head())
 
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
