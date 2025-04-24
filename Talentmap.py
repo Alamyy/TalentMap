@@ -7,6 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
 
+st.set_page_config(page_title="TalentMap", page_icon="🌟")
+
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
