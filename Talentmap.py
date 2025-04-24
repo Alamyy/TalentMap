@@ -7,7 +7,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
 
-# Position-specific dataset and features info
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -42,7 +41,7 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
 
-    matches = players[players['name'].str.contains(input_name, case=False, na=False)]
+    matches = players[players['name'] == input_name]
     if matches.empty:
         return "❌ No matching player found.", []
 
@@ -58,7 +57,6 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
         if not player_position or player_position not in position_data:
             return f"⚠️ No data for position: {player_position}", []
 
-        # Load position-specific data
         dataset = pd.read_pickle(position_data[player_position]['dataset_path'])
         with open(position_data[player_position]['features_path'], "rb") as f:
             features = pickle.load(f)
@@ -67,12 +65,6 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
             return "❌ Player not found in position dataset.", []
 
         df = dataset[['name', 'player_id'] + features].dropna()
-
-        # Ensure all features are in dataset
-        missing_features = [feat for feat in features if feat not in df.columns]
-        if missing_features:
-            return f"❌ Missing features in dataset: {missing_features}", []
-
         X = df[features]
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
@@ -113,29 +105,37 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
 
-    return f"🔍 Similar players to {name}:", results[:top_n]
+    return f"🔍 Similar players to {input_name}:", results[:top_n]
 
 # UI
 st.title("🎯 Similar Players Finder")
 
-name = st.text_input("Enter player name")
+player_names = sorted(players['name'].dropna().unique())
+name = st.selectbox("Choose a player", player_names)
+
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
 with st.expander("Advanced Filters"):
-    max_wage = st.number_input("Max Wage", min_value=0, step=1000)
-    max_value = st.number_input("Max Value", min_value=0, step=1000)
-    max_release_clause = st.number_input("Max Release Clause", min_value=0, step=1000)
-    max_age = st.number_input("Max Age", min_value=0)
-    min_overall_rating = st.number_input("Min Overall Rating", min_value=0)
-    club_name = st.text_input("Club Name")
-    club_league_name = st.text_input("Club League Name")
-    country_name = st.text_input("Country Name")
+    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+    max_age = st.number_input("Max Age", min_value=0, step=1)
+    min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
+
+    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
 
 if st.button("Find Similar Players"):
-    msg, results = find_similar_players(name, top_n, max_wage or None, max_age or None,
-                                        max_value or None, max_release_clause or None,
-                                        club_name or None, club_league_name or None,
-                                        country_name or None, min_overall_rating or None)
+    msg, results = find_similar_players(name, top_n,
+                                        max_wage or None,
+                                        max_age or None,
+                                        max_value or None,
+                                        max_release_clause or None,
+                                        club_name or None,
+                                        club_league_name or None,
+                                        country_name or None,
+                                        min_overall_rating or None)
     st.write(msg)
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
