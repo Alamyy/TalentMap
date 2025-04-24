@@ -30,7 +30,7 @@ st.markdown(
         }
 
         .top-right-button:hover {
-            background-color: #FFFFF;
+            background-color: #FFFF00;
         }
     </style>
     <a href="https://beyond-the-eye-proworth.streamlit.app/" target="_blank" class="top-right-button">Go to ProWorth</a>
