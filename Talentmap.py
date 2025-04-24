@@ -7,7 +7,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
 
-# Position data paths for different player positions
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -20,7 +19,6 @@ position_data = {
     'RB': {'dataset_path': 'full_backs.pkl', 'features_path': 'full_backs_features.pkl'}
 }
 
-# Cache functions to load data
 @st.cache_data
 def load_players():
     file_id = "1YLWNW8n4eFQgG77MILXiRkhWJU5a6r41"
@@ -35,11 +33,9 @@ def load_filters():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
     return pd.read_csv(url)
 
-# Load the player data and filters
 players = load_players()
 filters = load_filters()
 
-# Function to find similar players
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
@@ -110,79 +106,36 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 
     return f"🔍 Similar players to {input_name}:", results[:top_n]
 
-# Function to display player info page
-def player_info_page():
-    selected_player = st.session_state.selected_player
-
-    # Get player data
-    player_data = players[players['name'] == selected_player].iloc[0]
-    
-    # Display Basic Info
-    st.write(f"**Player ID**: {player_data['player_id']}")
-    st.write(f"**Name**: {player_data['name']}")
-    
-    # Handling missing values
-    full_name = player_data.get('full_name', 'Not available')
-    description = player_data.get('description', 'Not available')
-    dob = player_data.get('dob', 'Not available')
-    
-    st.write(f"**Full Name**: {full_name}")
-    st.write(f"**Description**: {description}")
-    st.write(f"**Height**: {player_data['height_cm']} cm")
-    st.write(f"**Weight**: {player_data['weight_kg']} kg")
-    st.write(f"**Date of Birth**: {dob}")
-
-    # Continue with other attributes like skills, etc.
-    st.write(f"**Preferred Foot**: {player_data['preferred_foot']}")
-    st.write(f"**Weak Foot**: {player_data['weak_foot']}")
-    st.write(f"**Skill Moves**: {player_data['skill_moves']}")
-    st.write(f"**Crossing**: {player_data['crossing']}")
-    # Add any other attributes you want to display here...
-
 # UI
 st.title("🎯 Similar Players Finder")
 
-# Navigation
-page = st.radio("Select a page", ["Find Similar Players", "Player Info"])
+player_names = sorted(players['name'].dropna().unique())
+name = st.selectbox("Choose a player", [''] + player_names)
+top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-if page == "Find Similar Players":
-    # Player selection dropdown
-    player_names = sorted(players['name'].dropna().unique())
-    name = st.selectbox("Choose a player", [''] + player_names)
+# Advanced Filters Section
+with st.expander("⚙️ Advanced Filters"):
+    max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
+    max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
+    max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
+    max_age = st.number_input("Max Age", min_value=0, step=1)
+    min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
 
-    # When a player is selected, store it in session state
-    if name:
-        st.session_state.selected_player = name
+    club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
+    club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
+    country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
 
-    # Display similar players search button
-    top_n = st.slider("Number of similar players to show", 1, 20, 10)
-
-    # Advanced Filters Section
-    with st.expander("⚙️ Advanced Filters"):
-        max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
-        max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
-        max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
-        max_age = st.number_input("Max Age", min_value=0, step=1)
-        min_overall_rating = st.number_input("Min Overall Rating", min_value=0, step=1)
-
-        club_name = st.selectbox("Club Name", [''] + sorted(filters['club_name'].dropna().unique().tolist()))
-        club_league_name = st.selectbox("Club League Name", [''] + sorted(filters['club_league_name'].dropna().unique().tolist()))
-        country_name = st.selectbox("Country Name", [''] + sorted(filters['country_name'].dropna().unique().tolist()))
-
-    # Search Button
-    if st.button("Find Similar Players") and name:
-        msg, results = find_similar_players(name, top_n,
-                                            max_wage or None,
-                                            max_age or None,
-                                            max_value or None,
-                                            max_release_clause or None,
-                                            club_name or None,
-                                            club_league_name or None,
-                                            country_name or None,
-                                            min_overall_rating or None)
-        st.write(msg)
-        if results:
-            st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
-
-elif page == "Player Info" and 'selected_player' in st.session_state:
-    player_info_page()
+# Search Button
+if st.button("Find Similar Players") and name:
+    msg, results = find_similar_players(name, top_n,
+                                        max_wage or None,
+                                        max_age or None,
+                                        max_value or None,
+                                        max_release_clause or None,
+                                        club_name or None,
+                                        club_league_name or None,
+                                        country_name or None,
+                                        min_overall_rating or None)
+    st.write(msg)
+    if results:
+        st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
