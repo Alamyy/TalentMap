@@ -19,6 +19,8 @@ position_data = {
     'RB': {'dataset_path': 'full_backs.pkl', 'features_path': 'full_backs_features.pkl'}
 }
 
+st.set_page_config(page_title="TalentMap", page_icon="⚽")
+
 @st.cache_data
 def load_players():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/players_adjusted.csv"
