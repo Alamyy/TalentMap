@@ -143,4 +143,83 @@ if st.button("Find Similar Players") and name:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
 
 
+import streamlit as st
+import pandas as pd
+
+# Load the dataset
+url = 'https://raw.githubusercontent.com/Alamyy/TalentMap/refs/heads/main/player-data-full.csv'
+df = pd.read_csv(url)
+
+# Streamlit page configuration
+st.set_page_config(page_title="Player Miner", layout="wide")
+
+# Title of the page
+st.title("Player Miner")
+
+# Instructions and description
+st.markdown("""
+This page allows you to explore detailed information about football players.
+You can select a player and view their data such as name, club, rating, stats, and more!
+""")
+
+# Create a dropdown for player selection based on player names
+player_names = df['name'].unique()
+selected_player = st.selectbox("Select a Player", player_names)
+
+# Filter the dataframe based on the selected player
+player_data = df[df['name'] == selected_player].iloc[0]
+
+# Display player details
+st.subheader("Player Information")
+st.write(f"**Name**: {player_data['full_name']}")
+st.write(f"**Description**: {player_data['description']}")
+st.write(f"**Height**: {player_data['height_cm']} cm")
+st.write(f"**Weight**: {player_data['weight_kg']} kg")
+st.write(f"**Date of Birth**: {player_data['dob']}")
+st.write(f"**Position**: {player_data['positions']}")
+st.write(f"**Overall Rating**: {player_data['overall_rating']}")
+st.write(f"**Potential**: {player_data['potential']}")
+st.write(f"**Preferred Foot**: {player_data['preferred_foot']}")
+st.write(f"**Weak Foot**: {player_data['weak_foot']}")
+st.write(f"**Skill Moves**: {player_data['skill_moves']}")
+st.write(f"**International Reputation**: {player_data['international_reputation']}")
+st.write(f"**Work Rate**: {player_data['work_rate']}")
+st.write(f"**Body Type**: {player_data['body_type']}")
+st.write(f"**Release Clause**: {player_data['release_clause']}")
+st.write(f"**Club**: {player_data['club_name']}")
+st.write(f"**Club Rating**: {player_data['club_rating']}")
+st.write(f"**Club Position**: {player_data['club_position']}")
+st.write(f"**Country**: {player_data['country_name']}")
+st.write(f"**Country Rating**: {player_data['country_rating']}")
+
+# Display Player Stats
+st.subheader("Player Stats")
+stats = ['crossing', 'finishing', 'heading_accuracy', 'short_passing', 'volleys', 'dribbling', 
+         'curve', 'fk_accuracy', 'long_passing', 'ball_control', 'acceleration', 'sprint_speed', 
+         'agility', 'reactions', 'balance', 'shot_power', 'jumping', 'stamina', 'strength', 'long_shots', 
+         'aggression', 'interceptions', 'positioning', 'vision', 'penalties', 'composure', 'defensive_awareness', 
+         'standing_tackle', 'sliding_tackle']
+
+for stat in stats:
+    st.write(f"**{stat.replace('_', ' ').title()}**: {player_data[stat]}")
+
+# Display player's image (if available)
+if pd.notna(player_data['image']):
+    st.image(player_data['image'], caption=f"{player_data['full_name']}'s Image", use_column_width=True)
+else:
+    st.write("No image available.")
+
+# Display Club and Country Logos
+col1, col2 = st.columns(2)
+with col1:
+    if pd.notna(player_data['club_logo']):
+        st.image(player_data['club_logo'], caption=f"{player_data['club_name']} Logo", use_column_width=True)
+    else:
+        st.write("No club logo available.")
+with col2:
+    if pd.notna(player_data['country_flag']):
+        st.image(player_data['country_flag'], caption=f"{player_data['country_name']} Flag", use_column_width=True)
+    else:
+        st.write("No country flag available.")
+
 
