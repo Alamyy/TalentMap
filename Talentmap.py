@@ -115,10 +115,10 @@ name = st.selectbox("Choose a player", [''] + player_names)
 
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
-show_filters = st.checkbox("🔧 Show Advanced Filters")
+filter_toggle = st.selectbox("🎛 Filter Options", ["None", "Show Advanced Filters"])
 
-if show_filters:
-    with st.expander("🎛 Customize Your Filters", expanded=True):
+if filter_toggle == "Show Advanced Filters":
+    with st.expander("🔧 Customize Your Filters", expanded=True):
         max_wage = st.slider("Max Wage (€)", 0, int(filters['wage'].max()), 0, step=5000)
         max_value = st.slider("Max Value (€)", 0, int(filters['value'].max()), 0, step=5000)
         max_release_clause = st.slider("Max Release Clause (€)", 0, int(filters['release_clause'].max()), 0, step=5000)
