@@ -50,7 +50,6 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 
     results = []
 
-
     for _, match_row in matches.iterrows():
         player_name = match_row['name']
         player_id = match_row['player_id']
@@ -105,18 +104,19 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
                 candidate_vector = X_pca[pca_idx]
                 score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
 
-                # Get the club name from dataset2 using player_id
+                # Get the club name and value from moreinfo and filters
                 player_club = moreinfo.loc[moreinfo['player_id'] == sim_id, 'club_name']
                 player_club_name = player_club.iloc[0] if not player_club.empty else "Unknown Club"
+
                 player_value = filters.loc[filters['player_id'] == sim_id, 'value'].iloc[0] if not filters.loc[filters['player_id'] == sim_id, 'value'].empty else "Unknown Value"
 
-
-                eligible_players.append((candidate_row['name'], score, player_club_name))
+                eligible_players.append((candidate_row['name'], score, player_club_name, player_value))
 
         eligible_players.sort(key=lambda x: x[1], reverse=True)
         results.extend(eligible_players[:top_n])
 
     return f"🔍 Similar players to {input_name}:", results[:top_n]
+
 
 
 # UI
