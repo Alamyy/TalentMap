@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.metrics.pairwise import cosine_distances
 
+# Position data paths for different player positions
 position_data = {
     'CAM': {'dataset_path': 'attack_mid.pkl', 'features_path': 'attack_mid_features.pkl'},
     'LW': {'dataset_path': 'wingers.pkl', 'features_path': 'wingers_features.pkl'},
@@ -19,6 +20,7 @@ position_data = {
     'RB': {'dataset_path': 'full_backs.pkl', 'features_path': 'full_backs_features.pkl'}
 }
 
+# Cache functions to load data
 @st.cache_data
 def load_players():
     file_id = "1YLWNW8n4eFQgG77MILXiRkhWJU5a6r41"
@@ -33,9 +35,11 @@ def load_filters():
     url = "https://raw.githubusercontent.com/Alamyy/TalentMap/main/filters.csv"
     return pd.read_csv(url)
 
+# Load the player data and filters
 players = load_players()
 filters = load_filters()
 
+# Function to find similar players
 def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
                           max_release_clause=None, club_name=None, club_league_name=None, 
                           country_name=None, min_overall_rating=None):
@@ -109,8 +113,15 @@ def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_
 # UI
 st.title("🎯 Similar Players Finder")
 
+# Player selection dropdown
 player_names = sorted(players['name'].dropna().unique())
 name = st.selectbox("Choose a player", [''] + player_names)
+
+# When a player is selected, store it in session state
+if name:
+    st.session_state.selected_player = name
+
+# Display similar players search button
 top_n = st.slider("Number of similar players to show", 1, 20, 10)
 
 # Advanced Filters Section
@@ -140,6 +151,7 @@ if st.button("Find Similar Players") and name:
     if results:
         st.table(pd.DataFrame(results, columns=["Player Name", "Similarity Score"]))
 
+# Display Player Info Page
 def player_info_page():
     selected_player = st.session_state.selected_player
 
@@ -167,7 +179,7 @@ def player_info_page():
     st.write(f"**Skill Moves**: {player_data['skill_moves']}")
     st.write(f"**Crossing**: {player_data['crossing']}")
     # Add any other attributes you want to display here...
-    
+
 # Display Player Info Page based on selection
 if 'selected_player' in st.session_state:
     player_info_page()
