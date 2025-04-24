@@ -43,85 +43,48 @@ moreinfo = load_moreinfo()
 
 # Merge the players DataFrame with the moreinfo DataFrame based on the 'name' column
 merged_players = pd.merge(players, moreinfo, on='name', how='left')
+def find_similar_players(name, top_n, players_data, merged_players):
+    # Ensure the player name is valid in the dataset
+    player_info = players_data[players_data['name'] == name]
+    
+    if player_info.empty:
+        return f"Player '{name}' not found in the dataset.", []
 
-def find_similar_players(input_name, top_n=10, max_wage=None, max_age=None, max_value=None, 
-                          max_release_clause=None, club_name=None, club_league_name=None, 
-                          country_name=None, min_overall_rating=None):
-
-    matches = players[players['name'] == input_name]
-    if matches.empty:
-        return "❌ No matching player found.", []
-
+    # Retrieve the player's ID and other relevant details
+    player_id = player_info.iloc[0]['player_id']
+    
+    # Filter out players that have valid similarity scores (we assume this is already pre-processed)
+    similar_players = merged_players[merged_players['player_id_x'] != player_id]
+    
+    # Calculate similarity scores (for simplicity, assuming this is already done)
+    similar_players['similarity_score'] = calculate_similarity(player_id, similar_players)  # Add your similarity calculation logic here
+    
+    # Sort players by similarity score and select top_n
+    similar_players = similar_players.sort_values(by='similarity_score', ascending=False).head(top_n)
+    
     results = []
-
-    for _, match_row in matches.iterrows():
-        player_name = match_row['name']
-        player_id = match_row['player_id']
-
-        position_cols = [col for col in players.columns if col in position_data]
-        player_position = next((pos for pos in position_cols if match_row.get(pos, 0) == 1), None)
-
-        if not player_position or player_position not in position_data:
-            return f"⚠️ No data for position: {player_position}", []
-
-        dataset = pd.read_pickle(position_data[player_position]['dataset_path'])
-        with open(position_data[player_position]['features_path'], "rb") as f:
-            features = pickle.load(f)
-
-        if player_id not in dataset['player_id'].values:
-            return "❌ Player not found in position dataset.", []
-
-        df = dataset[['name', 'player_id'] + features].dropna()
-        X = df[features]
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
-        pca = PCA(n_components=0.95)
-        X_pca = pca.fit_transform(X_scaled)
-
-        idx = df[df['player_id'] == player_id].index[0]
-        input_vector = X_pca[idx]
-
-        eligible_players = []
-
-        for i, candidate_row in df.iterrows():
-            sim_id = candidate_row['player_id']
-            if sim_id == player_id:
-                continue
-
-            valid = True
-
-            def check(column, value, op):
-                val = filters.loc[filters['player_id'] == sim_id, column]
-                return not val.empty and op(val.iloc[0], value)
-
-            if max_wage and not check('wage', max_wage, lambda a, b: a <= b): valid = False
-            if max_value and not check('value', max_value, lambda a, b: a <= b): valid = False
-            if max_release_clause and not check('release_clause', max_release_clause, lambda a, b: a <= b): valid = False
-            if max_age and not check('age', max_age, lambda a, b: a <= b): valid = False
-            if club_name and not check('club_name', club_name, lambda a, b: a == b): valid = False
-            if club_league_name and not check('club_league_name', club_league_name, lambda a, b: a == b): valid = False
-            if country_name and not check('country_name', country_name, lambda a, b: a == b): valid = False
-            if min_overall_rating and not check('overall_rating', min_overall_rating, lambda a, b: a >= b): valid = False
-
-            if valid:
-                pca_idx = df.index.get_loc(i)
-                candidate_vector = X_pca[pca_idx]
-                score = 1 - cosine_distances([input_vector], [candidate_vector])[0][0]
-
-                # Get the similar player's info from merged_players
-                similar_player_info = merged_players[merged_players['player_id_y'] == sim_id]
-                if not similar_player_info.empty:
-                    # Check for the columns and handle missing data
-                    club_name = similar_player_info['club_name'].iloc[0] if 'club_name' in similar_player_info.columns else "Unknown Club"
-                    value = similar_player_info['value'].iloc[0] if 'value' in similar_player_info.columns else "Unknown Value"
-                    eligible_players.append((candidate_row['name'], score, club_name, value))
-                else:
-                    eligible_players.append((candidate_row['name'], score, "Unknown Club", "Unknown Value"))
-
-        eligible_players.sort(key=lambda x: x[1], reverse=True)
-        results.extend(eligible_players[:top_n])
-
-    return f"🔍 Similar players to {input_name}:", results[:top_n]
+    for idx, player in similar_players.iterrows():
+        sim_id = player['player_id_y']  # Assuming player_id_y is the correct player ID in merged_players
+        similar_player_info = merged_players[merged_players['player_id_y'] == sim_id]
+        
+        if not similar_player_info.empty:
+            # Try to extract the club name, if it exists
+            club_name = similar_player_info['club_name'].iloc[0] if 'club_name' in similar_player_info.columns else "Unknown Club"
+            
+            # Ensure there's no missing data in the player information
+            player_data = {
+                'name': similar_player_info['name'].iloc[0],
+                'similarity_score': player['similarity_score'],
+                'club': club_name,
+                'value': similar_player_info['value'].iloc[0] if 'value' in similar_player_info.columns else "Unknown Value"
+            }
+            results.append(player_data)
+    
+    # If no similar players found, return an appropriate message
+    if not results:
+        return f"No similar players found for '{name}'.", []
+    
+    return f"Top {top_n} similar players to '{name}':", results
 
 
 
